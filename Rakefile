@@ -42,11 +42,13 @@ task :update do
     end
 
     sdoc_all_version = Gem.searcher.find('sdoc_all').version.to_s
-    commit_message = ask("commit message:"){ |q| q.default = "sdoc_all-#{sdoc_all_version}" }
-    tag_name = ask("tag:"){ |q| q.default = commit_message }
+
+    sdoc_all_version = "sdoc_all-#{sdoc_all_version}"
+    sh 'git', 'commit', '-e', '-m', sdoc_all_version
+
+    tag_name = ask("tag:"){ |q| q.default = sdoc_all_version }
     push = agree("push?")
 
-    sh 'git', 'commit', '-m', commit_message
     sh 'git', 'tag', tag_name
     sh "git push --tags" if push
   ensure
