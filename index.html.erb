@@ -1,0 +1,48 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	<title>toy.github.com</title>
+	<style type="text/css">
+		body {
+			font: 30px "Myriad Pro", "Helvetica", Arial, sans-serif;
+			margin: 20px;
+		}
+		a { text-decoration: none; }
+		span.list {
+			display: inline-block;
+			white-space: normal;
+			margin-top: -100px;
+			position: relative;
+			top: 35px;
+		}
+		span.parenthesis {
+			display: inline-block;
+			font-size: 150px;
+		}
+		span.content {
+			display: inline-block;
+			height: 150px;
+			vertical-align: bottom;
+			font-size: 9px;
+			text-align: center;
+		}
+		span.gems {
+			margin: 0 -5px;
+			width: 450px;
+		}
+		span.plugins {
+			margin: 0 -15px;
+			width: 170px;
+		}
+	</style>
+</head>
+<body>
+	<h1>references for:</h1>
+	<p><a href="r"><nobr><%= ruby %></nobr>,
+		<nobr><%= rails %></nobr>,
+		<nobr>gems <%= list :gems, gems %></nobr>,
+		<nobr>plugins <%= list :plugins, plugins %></nobr></a></p>
+	<p><a href="j">javascript core, dom api, prototype framework, script.aculo.us library and css</a></p>
+</body>
+</html>
