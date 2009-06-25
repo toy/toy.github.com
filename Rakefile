@@ -54,33 +54,36 @@ task :update do
   html = ERB.new(template, nil, '<>').result(Helpers.get_binding)
 
   Dir.chdir('master') do
-    exit unless File.basename(Dir.pwd) == 'master'
-    sh 'git checkout master'
-    sh 'rm -r * || true'
+    begin
+      exit unless File.basename(Dir.pwd) == 'master'
+      sh 'git checkout master'
+      sh 'rm -r * || true'
 
-    PATHES.each do |name, path|
-      dst = Pathname(name.to_s)
-      dst.mkpath
-      Pathname.glob("#{path}/*") do |src|
-        cp_r src, dst
+      PATHES.each do |name, path|
+        dst = Pathname(name.to_s)
+        dst.mkpath
+        Pathname.glob("#{path}/*") do |src|
+          cp_r src, dst
+        end
       end
+
+      Pathname('index.html').write(html)
+
+      sh 'git add -A'
+
+      sdoc_all_version = Gem.searcher.find('sdoc_all').version.to_s
+      sdoc_all_version = "sdoc_all-#{sdoc_all_version}"
+      sh 'git', 'commit', '-e', '-m', sdoc_all_version
+
+      tag_name = ask("tag:"){ |q| q.default = sdoc_all_version }
+      sh 'git', 'tag', tag_name
+
+      push = agree("push?")
+      sh 'git push --tags' if push
+    ensure
+      sh 'rm -r * || true'
+      sh 'git checkout empty'
     end
-
-    Pathname('index.html').write(html)
-
-    sh 'git add -A'
-
-    sdoc_all_version = Gem.searcher.find('sdoc_all').version.to_s
-    sdoc_all_version = "sdoc_all-#{sdoc_all_version}"
-    sh 'git', 'commit', '-e', '-m', sdoc_all_version
-
-    tag_name = ask("tag:"){ |q| q.default = sdoc_all_version }
-    sh 'git', 'tag', tag_name
-
-    push = agree("push?")
-    sh 'git push --tags' if push
-
-    sh 'rm -r * || true'
   end
 
 end
