@@ -79,7 +79,7 @@ task :update do
       sh 'git', 'tag', tag_name
 
       push = agree("push?")
-      sh 'git push --tags' if push
+      sh 'git push --tags origin master' if push
     rescue Exception
       sh 'rm -r * || true'
       sh 'git checkout empty'
