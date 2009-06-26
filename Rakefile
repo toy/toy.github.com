@@ -29,19 +29,19 @@ task :update do
       end
 
       def ruby
-        Pathname.glob("#{PATHES[:r]}/docs/ruby-*").first.basename
+        Pathname.glob("#{PATHES[:rb]}/docs/ruby-*").first.basename
       end
 
       def rails
-        Pathname.glob("#{PATHES[:r]}/docs/rails-*").first.basename
+        Pathname.glob("#{PATHES[:rb]}/docs/rails-*").first.basename
       end
 
       def gems
-        Pathname.glob("#{PATHES[:r]}/docs/gems.*").map{ |gem| gem.basename.to_s[/gems.(.*)/, 1] }
+        Pathname.glob("#{PATHES[:rb]}/docs/gems.*").map{ |gem| gem.basename.to_s[/gems.(.*)/, 1] }
       end
 
       def plugins
-        Pathname.glob("#{PATHES[:r]}/docs/plugins.*").map{ |gem| gem.basename.to_s[/plugins.(.*)/, 1] }
+        Pathname.glob("#{PATHES[:rb]}/docs/plugins.*").map{ |gem| gem.basename.to_s[/plugins.(.*)/, 1] }
       end
 
       def list(type, *items)
@@ -80,7 +80,7 @@ task :update do
 
       push = agree("push?")
       sh 'git push --tags' if push
-    ensure
+    rescue Exception
       sh 'rm -r * || true'
       sh 'git checkout empty'
     end
