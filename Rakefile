@@ -59,6 +59,9 @@ task :update do
       sh 'git checkout master'
       sh 'rm -r * || true'
 
+      sh 'git add -A'
+      sh 'git commit -m clean'
+
       PATHES.each do |name, path|
         dst = Pathname(name.to_s)
         dst.mkpath
