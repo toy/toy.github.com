@@ -57,10 +57,10 @@ task :update do
     begin
       exit unless File.basename(Dir.pwd) == 'master'
       sh 'git checkout master'
-      sh 'rm -r * || true'
+      sh 'rm -r *' rescue nil
 
       sh 'git add -A'
-      sh 'git commit -m clean'
+      sh 'git commit -m clean' rescue nil
 
       PATHES.each do |name, path|
         dst = Pathname(name.to_s)
@@ -79,12 +79,12 @@ task :update do
       sh 'git', 'commit', '-e', '-m', sdoc_all_version
 
       tag_name = ask("tag:"){ |q| q.default = sdoc_all_version }
-      sh 'git', 'tag', tag_name
+      sh 'git', 'tag', tag_name rescue nil
 
       push = agree("push?")
       sh 'git push --tags origin master' if push
     rescue Exception
-      sh 'rm -r * || true'
+      sh 'rm -r *' rescue nil
       sh 'git checkout empty'
     end
   end
