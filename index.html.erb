@@ -9,21 +9,23 @@
 			margin: 20px;
 		}
 		a { text-decoration: none; }
+		p { position: relative; margin: 0; }
 		span.list {
 			display: inline-block;
 			white-space: normal;
-			margin-top: -100px;
 			position: relative;
-			top: 35px;
+			margin: 0 -10px;
 		}
 		span.parenthesis {
 			display: inline-block;
-			font-size: 150px;
+			vertical-align: middle;
+			font-size: 160px;
+			margin: -10px 0;
 		}
 		span.content {
 			display: inline-block;
-			height: 150px;
-			vertical-align: bottom;
+			height: 140px;
+			vertical-align: middle;
 			font-size: 9px;
 			text-align: center;
 		}
@@ -35,6 +37,13 @@
 			margin: 0 -15px;
 			width: 170px;
 		}
+		span.download {
+			font-size: 16px;
+			font-weight: bold;
+			position: absolute;
+			display: inline-block;
+			top: -0.5em;
+		}
 	</style>
 </head>
 <body>
@@ -42,7 +51,9 @@
 	<p><a href="rb/"><nobr><%= ruby %></nobr>,
 		<nobr><%= rails %></nobr>,
 		<nobr>gems <%= list :gems, gems %></nobr>,
-		<nobr>plugins <%= list :plugins, plugins %></nobr></a></p>
-	<p><a href="ui/">javascript core, dom api, prototype framework, script.aculo.us library and css</a></p>
+		<nobr>plugins <%= list :plugins, plugins %></nobr></a>
+		<span class="download"><a href="http://github.com/toy/rb/downloads">download</a></span></p>
+	<p><a href="ui/">javascript core, dom api, prototype framework, script.aculo.us library and css</a>
+		<span class="download"><a href="http://github.com/toy/ui/downloads">download</a></span></p>
 </body>
 </html>

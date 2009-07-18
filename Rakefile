@@ -1,57 +1,71 @@
+require 'fileutils'
+require 'pathname'
+require 'erb'
+include ERB::Util
+require 'rubygems'
+require 'activesupport'
+require 'rake'
+require 'highline/import'
+
+class IndexHelpers
+  class << self
+    def get_binding
+      binding
+    end
+
+    def ruby
+      Pathname.glob("#{PATHES[:rb]}/docs/ruby-*").first.basename
+    end
+
+    def rails
+      Pathname.glob("#{PATHES[:rb]}/docs/rails-*").first.basename
+    end
+
+    def gems
+      Pathname.glob("#{PATHES[:rb]}/docs/gems.*").map{ |gem| gem.basename.to_s[/gems.(.*)/, 1] }
+    end
+
+    def plugins
+      Pathname.glob("#{PATHES[:rb]}/docs/plugins.*").map{ |gem| gem.basename.to_s[/plugins.(.*)/, 1] }
+    end
+
+    def list(type, *items)
+      %Q{<span class="list"><span class="parenthesis">[</span><span class="content #{type}">#{items.flatten.join(', ')}</span><span class="parenthesis">]</span></span>}
+    end
+  end
+end
+
+PATHES = {}
+YAML::load_file(Pathname('pathes')).each do |name, path|
+  PATHES[name.to_sym] = Pathname(path)
+end
+
+class Pathname
+  def write(s)
+    open('w'){ |f| f.write(s) }
+  end
+end
+
+def write_index
+  template = (Pathname(__FILE__).dirname + 'index.html.erb').read
+  html = ERB.new(template, nil, '<>').result(IndexHelpers.get_binding)
+  Pathname('index.html').write(html)
+end
+
 task :default => :update
+
+desc 'build index'
+task :index do
+  Dir.chdir('master') do
+    write_index
+    system 'open', 'index.html'
+  end
+end
 
 desc 'update'
 task :update do
-  require 'fileutils'
-  require 'pathname'
-  require 'erb'
-  include ERB::Util
-  require 'rubygems'
-  require 'activesupport'
-  require 'rake'
-  require 'highline/import'
-
-  PATHES = {}
-  YAML::load_file(Pathname('pathes')).each do |name, path|
-    PATHES[name.to_sym] = Pathname(path)
-  end
-
-  class Pathname
-    def write(s)
-      open('w'){ |f| f.write(s) }
-    end
-  end
-
-  class Helpers
-    class << self
-      def get_binding
-        binding
-      end
-
-      def ruby
-        Pathname.glob("#{PATHES[:rb]}/docs/ruby-*").first.basename
-      end
-
-      def rails
-        Pathname.glob("#{PATHES[:rb]}/docs/rails-*").first.basename
-      end
-
-      def gems
-        Pathname.glob("#{PATHES[:rb]}/docs/gems.*").map{ |gem| gem.basename.to_s[/gems.(.*)/, 1] }
-      end
-
-      def plugins
-        Pathname.glob("#{PATHES[:rb]}/docs/plugins.*").map{ |gem| gem.basename.to_s[/plugins.(.*)/, 1] }
-      end
-
-      def list(type, *items)
-        %Q{<span class="list"><span class="parenthesis">[</span><span class="content #{type}">#{items.flatten.join(', ')}</span><span class="parenthesis">]</span></span>}
-      end
-    end
-  end
-
-  template = Pathname('index.html.erb').read
-  html = ERB.new(template, nil, '<>').result(Helpers.get_binding)
+  commit_message = Time.now.strftime('%Y-%m-%d %H:%M:%S')
+  tag_name = commit_message.gsub(':', '-').gsub(' ', '_')
 
   Dir.chdir('master') do
     begin
@@ -59,33 +73,40 @@ task :update do
       sh 'git checkout master'
       sh 'rm -r *' rescue nil
 
-      sh 'git add -A'
-      sh 'git commit -m clean' rescue nil
-
-      PATHES.each do |name, path|
-        dst = Pathname(name.to_s)
-        dst.mkpath
-        Pathname.glob("#{path}/*") do |src|
-          cp_r src, dst
-        end
-      end
-
-      Pathname('index.html').write(html)
-
+      write_index
       sh 'git add -A'
 
-      sdoc_all_version = Gem.searcher.find('sdoc_all').version.to_s
-      sdoc_all_version = "sdoc_all-#{sdoc_all_version}"
-      sh 'git', 'commit', '-e', '-m', sdoc_all_version
-
-      tag_name = ask("tag:"){ |q| q.default = sdoc_all_version }
-      sh 'git', 'tag', tag_name rescue nil
-
-      push = agree("push?")
-      sh 'git push --tags origin master' if push
+      sh 'git', 'commit', '-m', commit_message
+      sh 'git push origin master'
     rescue Exception
       sh 'rm -r *' rescue nil
       sh 'git checkout empty'
+    end
+  end
+
+  PATHES.each do |name, path|
+    Dir.chdir(name.to_s) do
+      begin
+        exit unless File.basename(Dir.pwd) == name.to_s
+        sh 'git checkout gh-pages'
+        sh 'rm -r *' rescue nil
+
+        # # maybe I will need blank commit
+        # sh 'git add -A'
+        # sh 'git commit -m clean' rescue nil
+
+        Pathname.glob("#{path}/*") do |src|
+          cp_r src, '.'
+        end
+
+        sh 'git add -A'
+        sh 'git', 'commit', '-m', commit_message
+        sh 'git', 'tag', tag_name
+        sh 'git push --tags origin gh-pages'
+      rescue Exception
+        sh 'rm -r *' rescue nil
+        sh 'git checkout empty'
+      end
     end
   end
 
