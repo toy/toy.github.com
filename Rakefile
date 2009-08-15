@@ -88,7 +88,7 @@ task :update do
     Dir.chdir(name.to_s) do
       begin
         exit unless File.basename(Dir.pwd) == name.to_s
-        sh 'git checkout gh-pages'
+        Pathname('.git/HEAD').write("ref: refs/heads/gh-pages\n")
         sh 'rm -r *' rescue nil
 
         # # maybe I will need blank commit
