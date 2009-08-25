@@ -4,55 +4,22 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 	<title>toy.github.com</title>
 	<style type="text/css">
-		body {
-			font: 30px "Myriad Pro", "Helvetica", Arial, sans-serif;
-			margin: 20px;
-		}
+		body { font: 30px "Myriad Pro", "Helvetica", Arial, sans-serif; margin: 20px; }
 		a { text-decoration: none; }
 		p { position: relative; margin: 0; }
-		span.list {
-			display: inline-block;
-			white-space: normal;
-			position: relative;
-			margin: 0 -10px;
-		}
-		span.parenthesis {
-			display: inline-block;
-			vertical-align: middle;
-			font-size: 160px;
-			margin: -10px 0;
-		}
-		span.content {
-			display: inline-block;
-			height: 140px;
-			vertical-align: middle;
-			font-size: 9px;
-			text-align: center;
-		}
-		span.gems {
-			margin: 0 -5px;
-			width: 450px;
-		}
-		span.plugins {
-			margin: 0 -15px;
-			width: 170px;
-		}
-		span.download {
-			font-size: 16px;
-			font-weight: bold;
-			position: absolute;
-			display: inline-block;
-			top: -0.5em;
-		}
+		p.small { font-size: 11px; }
+		span.download { font-size: 16px; font-weight: bold; position: absolute; display: inline-block; top: -0.5em; }
 	</style>
 </head>
 <body>
 	<h1>references for:</h1>
-	<p><a href="rb/"><nobr><%= ruby %></nobr>,
-		<nobr><%= rails %></nobr>,
-		<nobr>gems <%= list :gems, gems %></nobr>,
-		<nobr>plugins <%= list :plugins, plugins %></nobr></a>
+	<p><a href="rb/"><nobr>ruby (<%= rubies.join(', ') %>)</nobr>,
+		<nobr>rails (<%= rails.join(', ') %>)</nobr>,
+		<nobr>gems <sup>*</sup></nobr>,
+		<nobr>plugins <sup>**</sup></nobr></a>
 		<span class="download"><a href="http://github.com/toy/rb/downloads">download</a></span></p>
+	<p class="small"><sup>*</sup>gems: <%= gems.join(', ') %></p>
+	<p class="small"><sup>**</sup>plugins: <%= plugins.join(', ') %></p>
 	<p><a href="ui/">javascript core, dom api, prototype framework, script.aculo.us library and css</a>
 		<span class="download"><a href="http://github.com/toy/ui/downloads">download</a></span></p>
 </body>

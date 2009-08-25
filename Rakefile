@@ -13,24 +13,20 @@ class IndexHelpers
       binding
     end
 
-    def ruby
-      Pathname.glob("#{PATHES[:rb]}/docs/ruby-*").first.basename
+    def rubies
+      Pathname.glob("#{PATHES[:rb]}/docs/ruby-*").map{ |path| path.basename.to_s[/^ruby\-(\d+\.\d+\.\d+\-p\d+)$/, 1] }.compact
     end
 
     def rails
-      Pathname.glob("#{PATHES[:rb]}/docs/rails-*").first.basename
+      Pathname.glob("#{PATHES[:rb]}/docs/rails-*").map{ |path| path.basename.to_s[/^rails\-(\d+\.\d+\.\d+)$/, 1] }.compact
     end
 
     def gems
-      Pathname.glob("#{PATHES[:rb]}/docs/gems.*").map{ |gem| gem.basename.to_s[/gems.(.*)/, 1] }
+      Pathname.glob("#{PATHES[:rb]}/docs/gems.*").map{ |path| path.basename.to_s[/^gems\.(.*)$/, 1] }.compact
     end
 
     def plugins
-      Pathname.glob("#{PATHES[:rb]}/docs/plugins.*").map{ |gem| gem.basename.to_s[/plugins.(.*)/, 1] }
-    end
-
-    def list(type, *items)
-      %Q{<span class="list"><span class="parenthesis">[</span><span class="content #{type}">#{items.flatten.join(', ')}</span><span class="parenthesis">]</span></span>}
+      Pathname.glob("#{PATHES[:rb]}/docs/plugins.*").map{ |path| path.basename.to_s[/^plugins\.(.*)$/, 1] }.compact
     end
   end
 end
@@ -67,47 +63,51 @@ task :update do
   commit_message = Time.now.strftime('%Y-%m-%d %H:%M:%S')
   tag_name = commit_message.gsub(':', '-').gsub(' ', '_')
 
-  Dir.chdir('master') do
-    begin
-      exit unless File.basename(Dir.pwd) == 'master'
-      sh 'git checkout master'
-      sh 'rm -r *' rescue nil
-
-      write_index
-      sh 'git add -A'
-
-      sh 'git', 'commit', '-m', commit_message
-      sh 'git push origin master'
-    rescue Exception
-      sh 'rm -r *' rescue nil
-      sh 'git checkout empty'
-    end
-  end
-
-  PATHES.each do |name, path|
-    Dir.chdir(name.to_s) do
-      begin
-        exit unless File.basename(Dir.pwd) == name.to_s
-        Pathname('.git/HEAD').write("ref: refs/heads/gh-pages\n")
-        sh 'rm -r *' rescue nil
-
-        # # maybe I will need blank commit
-        # sh 'git add -A'
-        # sh 'git commit -m clean' rescue nil
-
-        Pathname.glob("#{path}/*") do |src|
-          cp_r src, '.'
+  def run_with_branch_in(name, branch)
+    Dir.chdir(name) do
+      if File.basename(Dir.pwd) == name
+        puts "In directory #{name.inspect} <<<"
+        begin
+          Pathname('.git/HEAD').write("ref: refs/heads/#{branch}\n")
+          sh 'rm -r *' rescue nil
+          yield
+        rescue Exception => e
+          puts e
+        ensure
+          sh 'rm -r *' rescue nil
+          sh 'git checkout empty'
         end
-
-        sh 'git add -A'
-        sh 'git', 'commit', '-m', commit_message
-        sh 'git', 'tag', tag_name
-        sh 'git push --tags origin gh-pages'
-      rescue Exception
-        sh 'rm -r *' rescue nil
-        sh 'git checkout empty'
+        puts '>>>'
       end
     end
   end
 
+  def cp_r_link(src, dst)
+    Dir.chdir(src) do
+      sh "pax -rw -l -L . #{dst}"
+    end
+  end
+
+  run_with_branch_in 'root', 'master' do
+    write_index
+    sh 'git add -A'
+
+    sh 'git', 'commit', '-m', commit_message
+    sh 'git push origin master'
+  end
+
+  PATHES.each do |name, src|
+    run_with_branch_in name.to_s, 'gh-pages' do
+      # # maybe I will need blank commit
+      # sh 'git add -A'
+      # sh 'git commit -m clean' rescue nil
+
+      cp_r_link(src, Pathname.pwd)
+
+      sh 'git add -A'
+      sh 'git', 'commit', '-m', commit_message
+      sh 'git', 'tag', tag_name
+      sh 'git push --tags origin gh-pages'
+    end
+  end
 end
