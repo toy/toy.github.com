@@ -14,26 +14,26 @@ class IndexHelpers
     end
 
     def rubies
-      Pathname.glob("#{PATHES[:rb]}/docs/ruby-*").map{ |path| path.basename.to_s[/^ruby\-(\d+\.\d+\.\d+\-p\d+)$/, 1] }.compact
+      Pathname.glob("#{PATHS[:rb]}/docs/ruby-*").map{ |path| path.basename.to_s[/^ruby\-(\d+\.\d+\.\d+\-p\d+)$/, 1] }.compact
     end
 
     def rails
-      Pathname.glob("#{PATHES[:rb]}/docs/rails-*").map{ |path| path.basename.to_s[/^rails\-(\d+\.\d+\.\d+)$/, 1] }.compact
+      Pathname.glob("#{PATHS[:rb]}/docs/rails-*").map{ |path| path.basename.to_s[/^rails\-(\d+\.\d+\.\d+)$/, 1] }.compact
     end
 
     def gems
-      Pathname.glob("#{PATHES[:rb]}/docs/gems.*").map{ |path| path.basename.to_s[/^gems\.(.*)$/, 1] }.compact
+      Pathname.glob("#{PATHS[:rb]}/docs/gems.*").map{ |path| path.basename.to_s[/^gems\.(.*)$/, 1] }.compact
     end
 
     def plugins
-      Pathname.glob("#{PATHES[:rb]}/docs/plugins.*").map{ |path| path.basename.to_s[/^plugins\.(.*)$/, 1] }.compact
+      Pathname.glob("#{PATHS[:rb]}/docs/plugins.*").map{ |path| path.basename.to_s[/^plugins\.(.*)$/, 1] }.compact
     end
   end
 end
 
-PATHES = {}
-YAML::load_file(Pathname('pathes')).each do |name, path|
-  PATHES[name.to_sym] = Pathname(path)
+PATHS = {}
+YAML::load_file(Pathname('paths')).each do |name, path|
+  PATHS[name.to_sym] = Pathname(path)
 end
 
 class Pathname
@@ -96,7 +96,7 @@ task :update do
     sh 'git push origin master'
   end
 
-  PATHES.each do |name, src|
+  PATHS.each do |name, src|
     run_with_branch_in name.to_s, 'gh-pages' do
       # # maybe I will need blank commit
       # sh 'git add -A'
