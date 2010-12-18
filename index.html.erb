@@ -6,26 +6,47 @@
 	<style type="text/css">
 		body { font: 30px "Myriad Pro", "Helvetica", Arial, sans-serif; margin: 20px; }
 		a { text-decoration: none; }
+
+		h1 { margin: 0 0 0.5em 0; }
+		ul, li { list-style: none; margin: 0; padding: 0; }
+		li { margin-bottom: 1em; }
 		p { position: relative; margin: 0; }
 		p.small { font-size: 11px; }
-		span.download { font-size: 16px; font-weight: bold; position: absolute; display: inline-block; top: -0.5em; }
+		span.download { position: relative; }
+		span.download a { font-size: 16px; font-weight: bold; position: absolute; top: -0.6em; }
 	</style>
 </head>
 <body>
 	<h1>references for:</h1>
 
-	<p><a href="/rb/"><nobr>ruby (<%= rubies.join(', ') %>)</nobr>,
-		<nobr>rails (<%= rails.join(', ') %>)</nobr>,
-		<nobr>gems <sup>*</sup></nobr>,
-		<nobr>plugins <sup>**</sup></nobr></a>
-		<span class="download"><a href="http://github.com/toy/rb/downloads">download</a></span></p>
-	<p class="small"><sup>*</sup>gems: <%= gems.join(', ') %></p>
-	<p class="small"><sup>**</sup>plugins: <%= plugins.join(', ') %></p>
+	<ul>
+		<li>
+			<p>
+				<a href="/rb/">
+					<nobr>ruby (<%= rubies.join(', ') %>)</nobr>,
+					<nobr>rails (<%= rails.join(', ') %>)</nobr>,
+					<nobr>gems <sup>*</sup></nobr>,
+					<nobr>plugins <sup>**</sup></nobr>
+				</a>
+				<span class="download"><a href="http://github.com/toy/rb/downloads">download</a></span>
+			</p>
+			<p class="small"><sup>*</sup>gems: <%= gems.join(', ') %></p>
+			<p class="small"><sup>**</sup>plugins: <%= plugins.join(', ') %></p>
+		</li>
 
-	<p><a href="/ui/">javascript core, dom api, prototype framework, script.aculo.us library, css 2.1 and raphael</a>
-		<span class="download"><a href="http://github.com/toy/ui/downloads">download</a></span></p>
+		<li>
+			<p>
+				<a href="/ui/">javascript core, dom api, prototype framework, script.aculo.us library, css 2.1 and raphael</a>
+				<span class="download"><a href="http://github.com/toy/ui/downloads">download</a></span>
+			</p>
+		</li>
 
-	<p><a href="/as/">action script 3</a>
-		<span class="download"><a href="http://github.com/toy/as/downloads">download</a></span></p>
+		<li>
+			<p>
+				<a href="/as/">action script 3</a>
+				<span class="download"><a href="http://github.com/toy/as/downloads">download</a></span>
+			</p>
+		</li>
+	</ul>
 </body>
 </html>
