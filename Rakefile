@@ -104,4 +104,6 @@ task :update do
       sh 'git push --tags origin gh-pages'
     end
   end
+
+  sh 'git gc-all'
 end
