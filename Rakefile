@@ -1,11 +1,7 @@
-require 'fileutils'
 require 'erb'
-include ERB::Util
-require 'rubygems'
-require 'active_support'
+require 'yaml'
 require 'fspath'
-require 'rake'
-require 'highline/import'
+require 'raw_git_repo'
 
 class IndexHelpers
   class << self
@@ -14,7 +10,7 @@ class IndexHelpers
     end
 
     def rubies
-      FSPath(PATHS[:rb]).glob('docs', 'ruby-*').map{ |path| path.basename.to_s[/^ruby\-(\d+\.\d+\.\d+\-p\d+).*$/, 1] }.compact
+      FSPath(PATHS[:rb]).glob('docs', 'ruby-*').map{ |path| path.basename.to_s[/^ruby\-(\d+\.\d+\.\d+\-p\d+).*$/, 1] }.compact.uniq
     end
 
     def rails
@@ -22,11 +18,7 @@ class IndexHelpers
     end
 
     def gems
-      FSPath(PATHS[:rb]).glob('docs', 'gems.*').map{ |path| path.basename.to_s[/^gems\.(.*)$/, 1] }.compact
-    end
-
-    def plugins
-      FSPath(PATHS[:rb]).glob('docs', 'plugins.*').map{ |path| path.basename.to_s[/^plugins\.(.*)$/, 1] }.compact
+      FSPath(PATHS[:rb]).glob('docs', 'gem.*').map{ |path| path.basename.to_s[/^gem\.(.*)$/, 1] }.compact
     end
   end
 end
@@ -36,74 +28,57 @@ YAML::load_file(FSPath('paths')).each do |name, path|
   PATHS[name.to_sym] = FSPath(path)
 end
 
-def write_index
-  template = (FSPath(__FILE__).dirname + 'index.html.erb').read
+file 'index.git' do
+  sh 'git clone --bare git@github.com:toy/toy.github.com.git index.git'
+end
+
+PATHS.each do |name, path|
+  file "#{name}.git" do
+    sh "git clone --bare git@github.com:toy/#{name}.git #{name}.git"
+  end
+end
+
+directory 'index'
+task 'index/index.html' => 'index' do
+  template = FSPath('index.html.erb').read
   html = ERB.new(template, nil, '<>').result(IndexHelpers.get_binding)
-  FSPath('index.html').write(html)
+  FSPath('index/index.html').write(html)
 end
 
-def run_with_branch_in(name, branch)
-  Dir.chdir(name) do
-    if File.basename(Dir.pwd) == name
-      puts "In directory #{name.inspect} <<<"
-      begin
-        FSPath('.git/HEAD').write("ref: refs/heads/#{branch}\n")
-        sh 'rm -r *' rescue nil
-        yield
-      rescue Exception => e
-        puts e
-      ensure
-        sh 'rm -r *' rescue nil
-        sh 'git checkout empty'
+commit_message = Time.now.strftime('%Y-%m-%d %H:%M:%S')
+tag_name = commit_message.gsub(':', '-').gsub(' ', '_')
+
+namespace :update do
+  desc 'update index'
+  task :index => %w[index.git index/index.html] do
+    puts 'index.git'
+    repo = RawGitRepo.new('index.git')
+    tree = repo.tree_for('index')
+    if tree != repo.head_tree
+      commit = repo.commit(tree, commit_message, [])
+      repo.update_ref('HEAD', commit)
+      repo.gc
+      repo.push
+    end
+  end
+
+  PATHS.each do |name, path|
+    desc "update #{name} from #{path}"
+    task name => "#{name}.git" do
+      puts "#{name}.git"
+      repo = RawGitRepo.new("#{name}.git")
+
+      tree = repo.tree_for(path)
+      if tree != repo.head_tree
+        commit = repo.commit(tree, commit_message, [])
+        repo.tag(commit, tag_name)
+        repo.update_ref('HEAD', commit)
+        repo.gc
+        repo.push
       end
-      puts '>>>'
     end
   end
 end
 
-def cp_r_link(src, dst)
-  Dir.chdir(src) do
-    sh "pax -rw -l -L . #{dst}"
-  end
-end
-
-task :default => :update
-
-desc 'build index'
-task :index do
-  Dir.chdir 'root' do
-    write_index
-    system 'open', 'index.html'
-  end
-end
-
-desc 'update'
-task :update do
-  commit_message = Time.now.strftime('%Y-%m-%d %H:%M:%S')
-  tag_name = commit_message.gsub(':', '-').gsub(' ', '_')
-
-  Dir.chdir 'root' do
-    write_index
-    sh 'git add -A'
-
-    sh 'git', 'commit', '-m', commit_message rescue nil
-    sh 'git push origin master'
-  end
-
-  PATHS.each do |name, src|
-    run_with_branch_in name.to_s, 'gh-pages' do
-      # # maybe I will need blank commit
-      # sh 'git add -A'
-      # sh 'git commit -m clean' rescue nil
-
-      cp_r_link(src, FSPath.pwd)
-
-      sh 'git add -A'
-      sh 'git', 'commit', '-m', commit_message
-      sh 'git', 'tag', tag_name
-      sh 'git push --tags origin gh-pages'
-    end
-  end
-
-  sh 'git gc-all'
-end
+desc 'update everything'
+task :default => (PATHS.keys + %w[index]).map{ |name| "update:#{name}" }
