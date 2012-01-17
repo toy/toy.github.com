@@ -55,7 +55,7 @@ namespace :update do
     repo = RawGitRepo.new('index.git')
     tree = repo.tree_for('index')
     if tree != repo.head_tree
-      commit = repo.commit(tree, commit_message, [])
+      commit = repo.commit(tree, commit_message, repo.empty? ? [] : %w[HEAD])
       repo.update_ref('HEAD', commit)
       repo.gc
       repo.push
@@ -71,7 +71,7 @@ namespace :update do
 
       tree = repo.tree_for(path)
       if tree != repo.head_tree
-        commit = repo.commit(tree, commit_message, [])
+        commit = repo.commit(tree, commit_message, repo.empty? ? [] : %w[HEAD])
         repo.tag(commit, tag_name)
         repo.update_ref('HEAD', commit)
         repo.gc
