@@ -59,6 +59,7 @@ namespace :update do
       repo.update_ref('HEAD', commit)
       repo.gc
       repo.push
+      repo.push_tags
     end
   end
 
@@ -75,6 +76,7 @@ namespace :update do
         repo.update_ref('HEAD', commit)
         repo.gc
         repo.push
+        repo.push_tags
       end
     end
   end

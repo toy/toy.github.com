@@ -55,6 +55,10 @@ class RawGitRepo
     system(git_command(%W[push]))
   end
 
+  def push_tags
+    system(git_command(%W[push --tags]))
+  end
+
   def commits
     IO.popen(git_command(%w[rev-list --all]), &:readlines).map(&:strip)
   end
